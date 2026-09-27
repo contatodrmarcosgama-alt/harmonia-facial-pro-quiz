@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Harmonia Facial Pro — Quiz</title>
+<meta name="description" content="Descubra o que seu rosto já revela.">
+<link rel="stylesheet" href="css/style.css">
+
+  <!-- Google tag (Google Analytics 4 — gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N3JG1H6KNG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N3JG1H6KNG');
+  </script>
+</head>
+<body>
+
+  <header class="hfp-topbar">
+    <div class="hfp-topbar__mark" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <path d="M9 4 L9 24 M19 4 L19 24 M9 14 L19 14" stroke="var(--gold)" stroke-width="1.4"/>
+      </svg>
+    </div>
+    <div class="hfp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Progresso do quiz">
+      <div class="hfp-progress__fill" id="progressFill"></div>
+    </div>
+  </header>
+
+  <main id="app" class="hfp-app"></main>
+
+  <button id="restartBtn" class="hfp-restart" type="button" hidden>Reiniciar quiz</button>
+
+  <footer class="hfp-footer">
+    <p>© 2026 Harmonia Facial Pro</p>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

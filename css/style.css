@@ -1,0 +1,371 @@
+/* HARMONIA FACIAL PRO — QUIZ
+   Paleta institucional: fundo #0B0F14 · dourado #C6A969 · claro #F5F6F7 · cinza #2A323C */
+
+:root {
+  --bg: #0B0F14;
+  --gold: #C6A969;
+  --light: #F5F6F7;
+  --gray: #2A323C;
+  --danger: #E4572E;
+  --success: #2ECC71;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 14px;
+  --max-width: 560px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--light); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  min-height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow-x: hidden;
+  position: relative;
+  isolation: isolate;
+  --hfp-page-bg-image: none;
+}
+/* "Reiniciar quiz" e o rodapé de copyright são irmãos de <main id="app"> no
+   DOM, fora de qualquer .hfp-screen. Para que também fiquem sobre a foto
+   contínua (nunca sobre um retângulo preto isolado), replicamos aqui, fixo
+   na janela inteira, a mesma técnica de pano de fundo ampliado/desfocado
+   usada dentro de cada tela. A JS atualiza --hfp-page-bg-image em paralelo
+   a --hfp-bg-image sempre que uma nova tela é exibida. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  background-image: var(--hfp-page-bg-image);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  filter: blur(32px) brightness(0.42) saturate(1.05);
+  transform: scale(1.15);
+}
+img, video { max-width: 100%; display: block; }
+button, input { font-family: inherit; }
+
+.hfp-topbar { position: sticky; top: 0; z-index: 20; background: rgba(11,15,20,0.97); padding: calc(env(safe-area-inset-top, 0px) + 14px) 24px 12px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.hfp-topbar__mark { opacity: 0.9; }
+.hfp-progress { width: 100%; max-width: 340px; height: 5px; background: rgba(245, 246, 247, 0.18); border-radius: 999px; overflow: hidden; }
+.hfp-progress__fill { height: 100%; width: 7%; background: var(--success); border-radius: 999px; transition: width 0.5s ease; }
+
+.hfp-app { display: flex; justify-content: center; }
+
+.hfp-screen { --hfp-bg-image: none; width: 100%; max-width: var(--max-width); padding: 44px 24px 86px; display: flex; flex-direction: column; gap: 24px; position: relative; min-height: max(calc(100svh - 76px), 760px); }
+/* IMPORTANTE: nunca usar "cover" na FOTO NÍTIDA (::after) — cover amplia e
+   corta a composição (rosto, malha dourada, proporções) até sair do
+   enquadramento original. Usamos "contain" para a foto nítida (nunca corta,
+   nunca deforma, nunca estica).
+   Quando a caixa da tela é mais alta que a foto (proporção vertical muito
+   longa), o espaço restante é preenchido pelo pano de fundo ampliado e
+   desfocado definido em body::before (mesma imagem desta tela, aplicada uma
+   única vez para a janela inteira — ver comentário acima). A foto nítida e
+   completa (::after) fica por cima dele, sempre inteira, nunca cortada. O
+   resultado: nunca existe um retângulo preto isolado — a imagem (nítida ou
+   desfocada) cobre a tela inteira, incluindo a área de baixo (alternativas,
+   botão, "Reiniciar quiz", copyright). */
+.hfp-screen--has-bg {
+  position: relative;
+  isolation: isolate;
+}
+/* A caixa da tela fica transparente de propósito: o pano de fundo ampliado
+   e desfocado (body::before, definido acima) já cobre a janela inteira de
+   forma contínua e é a MESMA imagem desta tela. Deixando a caixa sem cor
+   sólida própria, essa mesma camada aparece por trás da foto nítida sem
+   nenhuma emenda — inclusive na área de baixo (alternativas, botão,
+   "Reiniciar quiz", copyright), que fica fora desta caixa. Uma segunda
+   camada de desfoque aqui dentro criaria um recorte quase imperceptível,
+   mas visível, exatamente onde a caixa termina — por isso usamos só uma. */
+.hfp-screen--has-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image: linear-gradient(180deg, rgba(11,15,20,0.08) 0%, rgba(11,15,20,0.27) 55%, rgba(11,15,20,0.66) 100%), var(--hfp-bg-image);
+  background-repeat: no-repeat, no-repeat;
+  background-size: 100% 100%, contain;
+  background-position: top center, top center;
+}
+/* Telas com muito texto direto sobre o fundo (perguntas, pausas, autoridade) pedem um
+   pouco mais de contraste para a leitura, mas ainda sem "apagar" a foto. */
+.hfp-screen--question.hfp-screen--has-bg::after,
+.hfp-screen--break.hfp-screen--has-bg::after,
+.hfp-screen--authority.hfp-screen--has-bg::after,
+.hfp-screen--features.hfp-screen--has-bg::after {
+  background-image: linear-gradient(180deg, rgba(11,15,20,0.16) 0%, rgba(11,15,20,0.42) 58%, rgba(11,15,20,0.76) 100%), var(--hfp-bg-image);
+}
+.hfp-screen--loading.hfp-screen--has-bg::after {
+  background-image: linear-gradient(180deg, rgba(11,15,20,0.28) 0%, rgba(11,15,20,0.5) 55%, rgba(11,15,20,0.75) 100%), var(--hfp-bg-image);
+}
+/* Tela de resultado: é a mais longa (gráficos + cartões). Preservamos a
+   composição completa da foto no topo, sem esticar; o restante do conteúdo,
+   abaixo da altura da imagem, agora continua sobre o pano de fundo desfocado
+   de body::before, em vez de um bloco preto isolado. */
+.hfp-screen--results.hfp-screen--has-bg::after {
+  background-image: linear-gradient(180deg, rgba(11,15,20,0.15) 0%, rgba(11,15,20,0.3) 70%, rgba(11,15,20,0.55) 100%), var(--hfp-bg-image);
+}
+/* Slides 2, 5, 8, 9, 11, 13, 16 e 18 (q1, q3, break3, q5, break4, authority,
+   q7, loading): fotografias novas, já entregues na proporção vertical 9:16
+   pensada especificamente para preencher a tela inteira. Diferente do
+   restante do projeto (onde as fotos originais têm proporções variadas e
+   por isso usam "contain" + pano de fundo desfocado para nunca cortar
+   nada), aqui a foto já nasce no enquadramento certo: usamos "cover" para
+   que ela preencha 100% da área, sem gerar nenhuma camada extra e sem
+   esticar/deformar.
+   Observação: a tela q7 usava antes um zoom manual (190%) porque a foto
+   antiga era bem mais larga que alta. Com a nova foto 9:16, esse ajuste
+   manual não é mais necessário — "cover" já preenche a tela inteira sem
+   cortar o rosto. */
+.hfp-screen--question.hfp-screen--has-bg[data-screen-id="q1"]::after,
+.hfp-screen--question.hfp-screen--has-bg[data-screen-id="q3"]::after,
+.hfp-screen--question.hfp-screen--has-bg[data-screen-id="q5"]::after,
+.hfp-screen--question.hfp-screen--has-bg[data-screen-id="q7"]::after,
+.hfp-screen--break.hfp-screen--has-bg[data-screen-id="break3"]::after,
+.hfp-screen--break.hfp-screen--has-bg[data-screen-id="break4"]::after,
+.hfp-screen--authority.hfp-screen--has-bg[data-screen-id="authority"]::after,
+.hfp-screen--loading.hfp-screen--has-bg[data-screen-id="loading"]::after {
+  background-size: 100% 100%, cover;
+  background-position: top center, center;
+}
+/* Slides 4, 6 e 8 (break1, break2, break3): o parágrafo de texto ("corpo")
+   passa a ficar próximo do centro vertical da tela, sem mover o título
+   (nem o subtítulo, na break3) nem o botão — eles continuam exatamente
+   onde estavam. O parágrafo sai do fluxo do flexbox e fica centralizado
+   em relação à altura total da tela (.hfp-screen já é o ancestral
+   posicionado). Nenhuma palavra foi alterada. */
+.hfp-screen--break[data-screen-id="break1"] > .hfp-body,
+.hfp-screen--break[data-screen-id="break2"] > .hfp-body,
+.hfp-screen--break[data-screen-id="break3"] > .hfp-body {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 1;
+}
+/* Slide 11 (break4): esta tela tem DOIS parágrafos de corpo (body + body2).
+   Só o último ("Mas ainda existe uma pergunta...") vai para o centro
+   vertical — o primeiro parágrafo e o título continuam exatamente onde
+   estavam. ":last-of-type" seleciona o último <p> entre os irmãos do
+   mesmo tipo, ou seja, o body2, nunca o primeiro body. */
+.hfp-screen--break[data-screen-id="break4"] > p.hfp-body:last-of-type {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 1;
+}
+
+.hfp-title { font-size: clamp(1.5rem, 5.8vw, 2rem); line-height: 1.22; font-weight: 750; margin: 0; text-align: center; letter-spacing: -0.025em; text-wrap: balance; }
+.hfp-title--sm { font-size: 1.28rem; }
+.hfp-title--center { text-align: center; }
+.hfp-subtitle { text-align: center; color: rgba(245, 246, 247, 0.75); margin: 0; font-size: 0.98rem; }
+.hfp-body { text-align: center; line-height: 1.62; color: rgba(245, 246, 247, 0.94); margin: 0; font-size: clamp(0.98rem, 3.7vw, 1.08rem); text-wrap: pretty; }
+.hfp-body--center { text-align: center; }
+.hfp-highlight { color: var(--danger); }
+
+.hfp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 17px 22px; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none; min-height: 56px; }
+.hfp-btn--primary { background: var(--gold); color: #1a1a1a; }
+.hfp-btn--primary:active { transform: translateY(1px); }
+.hfp-btn__icon { font-size: 0.9em; }
+.hfp-trustrow { text-align: center; font-size: 0.78rem; color: rgba(245, 246, 247, 0.55); margin: 4px 0 0; }
+.hfp-flag { color: var(--danger); font-weight: 700; }
+
+.hfp-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.hfp-checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.95rem; line-height: 1.4; }
+.hfp-check { color: #5B8DEF; font-weight: 700; flex-shrink: 0; }
+
+.hfp-question-text { font-size: clamp(1.28rem, 5.1vw, 1.7rem); font-weight: 750; line-height: 1.25; text-align: center; margin: 4px 0 16px; text-wrap: balance; }
+.hfp-watermark { position: absolute; top: 45%; left: 0; right: 0; text-align: center; font-size: 1.3rem; letter-spacing: 0.08em; color: rgba(198, 169, 105, 0.18); font-weight: 700; pointer-events: none; z-index: 0; }
+.hfp-options { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
+.hfp-option { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 17px 19px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.72); background: rgba(245,246,247,0.95); color: #1a1a1a; font-size: 0.98rem; font-weight: 560; cursor: pointer; min-height: 58px; transition: background 0.15s ease, transform 0.1s ease; }
+.hfp-option:active { transform: scale(0.99); }
+.hfp-option--selected { background: var(--gold); }
+.hfp-option__check { color: #1a1a1a; opacity: 0.7; flex-shrink: 0; }
+
+.hfp-feature-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.hfp-feature-list li { display: flex; gap: 12px; align-items: flex-start; padding-bottom: 12px; border-bottom: 1px solid rgba(245, 246, 247, 0.1); }
+.hfp-feature-check { color: var(--success); flex-shrink: 0; margin-top: 2px; }
+.hfp-feature-list strong { display: block; font-size: 0.96rem; }
+.hfp-feature-list p { margin: 2px 0 0; font-size: 0.86rem; color: rgba(245,246,247,0.7); }
+.hfp-footnote { text-align: center; font-size: 0.85rem; color: rgba(245, 246, 247, 0.6); margin: 0; }
+.hfp-method-notice { display: flex; gap: 4px; background: rgba(245,246,247,0.94); color: #343434; border-radius: 13px; padding: 16px 18px; font-size: 0.85rem; line-height: 1.45; }
+.hfp-method-notice strong { color: #6b5740; }
+
+.hfp-authority-photo { width: 100%; max-width: 360px; margin: 10px auto; border-radius: 18px; filter: grayscale(1); }
+.hfp-authority-signature { margin: 6px 0 0; text-align: center; font-size: 1.03rem; line-height: 1.45; font-weight: 750; color: var(--light); }
+
+.hfp-audio-bubble { display: flex; align-items: center; gap: 12px; background: #1E7A5F; border-radius: 14px; padding: 12px 14px; }
+.hfp-audio-play { width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15); color: var(--light); font-size: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+.hfp-audio-track { flex: 1; }
+.hfp-audio-progress { height: 4px; background: rgba(255,255,255,0.25); border-radius: 999px; overflow: hidden; }
+.hfp-audio-progress__fill { height: 100%; width: 0%; background: var(--light); }
+.hfp-audio-times { display: flex; justify-content: space-between; font-size: 0.72rem; color: rgba(255,255,255,0.85); margin-top: 6px; }
+.hfp-audio-inset { width: min(72%, 330px); align-self: center; margin-top: auto; border-radius: 18px; border: 1px solid rgba(198,169,105,.4); object-fit: contain; }
+.hfp-asset-flag { font-size: 0.78rem; text-align: center; color: rgba(245, 246, 247, 0.5); margin: 0; }
+.hfp-asset-flag code { background: rgba(245, 246, 247, 0.08); padding: 1px 5px; border-radius: 4px; }
+
+.hfp-chat { background: #E9E4D8; border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.hfp-chat__bubble { background: #ffffff; border-radius: 10px; padding: 10px 12px; color: #1a1a1a; }
+.hfp-chat__sender { display: block; color: #2E86C1; font-weight: 700; font-size: 0.82rem; margin-bottom: 2px; }
+.hfp-chat__bubble p { margin: 0; font-size: 0.9rem; line-height: 1.35; }
+.hfp-chat__time { display: block; text-align: right; font-size: 0.7rem; color: #888; margin-top: 4px; }
+
+.hfp-info-card { display: flex; gap: 10px; background: #FCF3D9; color: #3a3320; border: 1px solid var(--gold); border-radius: 12px; padding: 14px 16px; font-size: 0.9rem; line-height: 1.45; }
+.hfp-info-card__icon { flex-shrink: 0; }
+.hfp-highlight-green { color: #1E7A4A; }
+.hfp-section-title { text-align: center; font-size: 1.05rem; font-weight: 700; margin: 6px 0 -4px; }
+.hfp-section-title--center { text-align: center; }
+.hfp-chart-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.hfp-chart-label { fill: rgba(245, 246, 247, 0.8); font-size: 10px; }
+.hfp-radar, .hfp-donut { width: 100%; max-width: 260px; height: auto; }
+.hfp-radar { max-width: 300px; }
+.hfp-legend { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 16px; font-size: 0.8rem; }
+.hfp-legend li { display: flex; align-items: center; gap: 6px; }
+.hfp-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+.hfp-bars { display: flex; justify-content: center; gap: 16px; }
+.hfp-bar-card { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; max-width: 110px; }
+.hfp-bar-track { position: relative; width: 100%; height: 120px; background: rgba(245, 246, 247, 0.9); border-radius: 10px; overflow: hidden; display: flex; align-items: flex-end; }
+.hfp-bar-fill { width: 100%; background: #2E86C1; }
+.hfp-bar-value { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: 0.78rem; font-weight: 700; color: #1a1a1a; }
+.hfp-bar-label { text-align: center; font-size: 0.78rem; color: rgba(245, 246, 247, 0.8); margin: 0; }
+
+.hfp-loading-bar { width: 100%; height: 8px; background: rgba(245, 246, 247, 0.15); border-radius: 999px; overflow: hidden; }
+.hfp-loading-bar__fill { height: 100%; width: 0%; background: var(--gold); }
+.hfp-loading-percent { text-align: center; font-size: 1.6rem; font-weight: 700; color: var(--gold); margin: 0; font-variant-numeric: tabular-nums; }
+
+.hfp-confetti { position: relative; height: 0; overflow: visible; }
+.hfp-confetti__piece { position: absolute; top: -10px; width: 8px; height: 14px; opacity: 0.9; animation: hfp-fall 1.4s ease-in forwards; }
+@keyframes hfp-fall { to { transform: translateY(160px) rotate(200deg); opacity: 0; } }
+.hfp-locked-card { position: relative; min-height: 280px; overflow: hidden; display: grid; place-items: center; background: rgba(245, 246, 247, 0.06); border: 1px solid rgba(198, 169, 105, 0.58); border-radius: 20px; }
+.hfp-locked-card__preview { position: absolute; inset: -8px; width: calc(100% + 16px); height: calc(100% + 16px); object-fit: cover; object-position: 50% 34%; filter: blur(4px) brightness(0.48); transform: scale(1.025); }
+.hfp-locked-card__headline { position: absolute; left: 28px; right: 28px; bottom: 42px; margin: 0; text-align: center; color: rgba(255,255,255,0.72); font-family: Georgia, 'Times New Roman', serif; font-size: 1.3rem; line-height: 1.18; filter: blur(1.8px); }
+.hfp-locked-card__overlay { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+.hfp-locked-card__icon { width: 34px; height: 40px; color: #fff; }
+
+.hfp-form { background: var(--light); color: #1a1a1a; border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.hfp-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; font-weight: 600; }
+.hfp-field input { border: 1px solid #d8d8d8; border-radius: 10px; padding: 12px 14px; font-size: 1rem; min-height: 48px; }
+.hfp-field input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+.hfp-field--invalid { border-color: var(--danger) !important; }
+.hfp-field__error { color: var(--danger); font-weight: 600; font-size: 0.78rem; }
+
+.hfp-video-wrap { position: relative; border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 4 / 5; }
+.hfp-video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+.hfp-video-play { position: absolute; inset: 0; margin: auto; width: 60px; height: 60px; border-radius: 50%; border: none; background: rgba(255,255,255,0.85); color: #1a1a1a; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+.hfp-feature-card { background: var(--light); color: #1a1a1a; border-radius: 18px; padding: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 0; text-align: center; }
+.hfp-feature-card__art { background: var(--bg); border-radius: 0; padding: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+.hfp-feature-card__art img { width: 100%; max-height: none; aspect-ratio: 4 / 5; object-fit: contain; border-radius: 0; background: var(--bg); }
+.hfp-feature-card__body { width: 100%; padding: 20px 22px 22px; }
+.hfp-feature-card h4 { margin: 0; font-size: 1rem; }
+.hfp-feature-card p { margin: 0; font-size: 0.88rem; color: #444; line-height: 1.4; }
+
+.hfp-countdown { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 0.9rem; }
+.hfp-countdown__clock { display: flex; align-items: center; gap: 8px; }
+.hfp-countdown__clock div { background: rgba(245, 246, 247, 0.08); border: 1px solid var(--gold); border-radius: 8px; padding: 6px 12px; text-align: center; min-width: 52px; }
+.hfp-countdown__clock strong { display: block; font-size: 1.3rem; color: var(--gold); }
+.hfp-countdown__clock small { font-size: 0.62rem; color: rgba(245,246,247,0.6); }
+
+.hfp-price-card { background: var(--light); color: #1a1a1a; border: 2px solid var(--success); border-radius: var(--radius); overflow: hidden; text-align: center; }
+.hfp-price-card__badge { background: var(--success); color: #fff; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.03em; margin: 0; padding: 8px; }
+.hfp-price-card__product { font-weight: 700; margin: 14px 0 0; font-size: 0.95rem; }
+.hfp-price-card__from { margin: 4px 0 0; font-size: 0.9rem; color: #444; }
+.hfp-price-card__from s { color: var(--danger); }
+.hfp-price-card__amount { font-size: 1.1rem; margin: 4px 0 14px; }
+.hfp-price-card__amount strong { font-size: 1.8rem; }
+.hfp-price-card .hfp-btn { border-radius: 0; margin: 0; }
+
+.hfp-recap-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.hfp-recap-list li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed rgba(245, 246, 247, 0.25); font-size: 0.92rem; }
+.hfp-recap-list li s { margin-left: auto; color: var(--danger); }
+.hfp-recap-check { color: var(--success); }
+.hfp-recap-total { text-align: center; font-weight: 700; font-size: 1.15rem; color: var(--danger); margin: 0; }
+.hfp-recap-total s { color: var(--danger); }
+
+.hfp-faq { display: flex; flex-direction: column; gap: 10px; }
+.hfp-faq__item { background: var(--light); color: #1a1a1a; border-radius: 12px; padding: 14px 16px; }
+.hfp-faq__item summary { font-weight: 700; font-size: 0.94rem; cursor: pointer; list-style: none; }
+.hfp-faq__item summary::-webkit-details-marker { display: none; }
+.hfp-faq__item summary::after { content: '⌄'; float: right; }
+.hfp-faq__item[open] summary::after { content: '⌃'; }
+.hfp-faq__item p { margin: 10px 0 0; font-size: 0.88rem; color: #444; line-height: 1.45; }
+
+.hfp-guarantee { background: var(--light); color: #1a1a1a; border-radius: var(--radius); padding: 24px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.hfp-guarantee__icon { font-size: 1.6rem; color: var(--success); }
+.hfp-guarantee__badge { color: var(--success); font-weight: 700; font-size: 0.8rem; margin: 0; }
+.hfp-guarantee p { margin: 4px 0 0; font-size: 0.86rem; color: #444; }
+
+/* Arquitetura vertical inspirada na referência móvel: conteúdo em blocos,
+   fotografia respirando e chamadas sempre abaixo da leitura. */
+.hfp-screen--intro { padding-top: 54px; gap: 28px; }
+.hfp-screen--intro .hfp-btn { margin-top: clamp(28px, 8vh, 86px); }
+.hfp-screen--intro .hfp-trustrow { color: #45d392; font-weight: 650; line-height: 1.7; }
+
+.hfp-screen--question { padding-top: clamp(42px, 8vh, 92px); gap: 22px; }
+.hfp-screen--question .hfp-options { margin-bottom: clamp(24px, 6vw, 48px); }
+
+.hfp-screen--break { min-height: max(calc(100svh - 76px), 900px); padding-top: clamp(54px, 10vh, 110px); gap: 28px; }
+.hfp-screen--break .hfp-btn { margin-top: auto; }
+
+.hfp-screen--features { min-height: 980px; padding-top: 44px; gap: 25px; }
+.hfp-screen--features .hfp-feature-list { gap: 18px; }
+.hfp-screen--features .hfp-btn { margin-top: 16px; }
+
+.hfp-screen--authority { min-height: 1060px; gap: 26px; }
+.hfp-screen--authority .hfp-btn { margin-top: auto; }
+
+.hfp-screen--audio { min-height: max(calc(100svh - 76px), 900px); padding-top: clamp(52px, 9vh, 96px); gap: 28px; }
+.hfp-screen--audio .hfp-audio-bubble { margin-top: 4px; }
+.hfp-screen--audio .hfp-btn { margin-top: 18px; }
+
+.hfp-screen--proof { min-height: 980px; padding-top: 54px; gap: 26px; }
+.hfp-screen--proof .hfp-btn { margin-top: 18px; }
+
+.hfp-screen--results { gap: 34px; padding-top: 52px; }
+.hfp-screen--results .hfp-section-title { margin: 20px 0 2px; font-size: 1.18rem; }
+.hfp-screen--results .hfp-info-card { margin-bottom: 14px; }
+.hfp-screen--results .hfp-btn { margin-top: 24px; }
+
+.hfp-screen--loading { min-height: max(calc(100svh - 76px), 820px); justify-content: flex-start; padding-top: clamp(90px, 17vh, 175px); gap: 22px; }
+.hfp-screen--loading .hfp-loading-percent { order: 2; align-self: flex-end; margin-top: -52px; font-size: 1rem; color: var(--success); }
+.hfp-screen--loading .hfp-body { order: 3; margin-top: 8px; }
+
+.hfp-screen--unlock { min-height: max(calc(100svh - 76px), 760px); gap: 28px; padding-top: 48px; }
+.hfp-screen--unlock .hfp-form { margin-top: 2px; }
+
+.hfp-screen--offer { gap: 32px; padding-top: 48px; }
+.hfp-screen--offer > .hfp-title,
+.hfp-screen--offer > .hfp-body,
+.hfp-screen--offer > .hfp-checklist { margin-left: 8px; margin-right: 8px; }
+.hfp-screen--offer .hfp-video-wrap { margin-bottom: 14px; }
+.hfp-screen--offer .hfp-section-title { margin-top: 30px; font-size: 1.25rem; }
+.hfp-screen--offer .hfp-feature-card { margin-bottom: 10px; }
+
+.hfp-restart { display: block; margin: 0 auto 20px; background: none; border: none; color: rgba(245, 246, 247, 0.45); font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
+.hfp-footer { text-align: center; padding: 10px 0 calc(env(safe-area-inset-bottom, 0px) + 24px); font-size: 0.75rem; color: rgba(245, 246, 247, 0.35); }
+
+@media (min-width: 560px) {
+  .hfp-screen { padding-left: 38px; padding-right: 38px; }
+  .hfp-title { font-size: 1.7rem; }
+}
+
+@media (max-width: 380px) {
+  .hfp-screen { padding-left: 18px; padding-right: 18px; }
+  .hfp-option { padding: 15px 16px; font-size: 0.92rem; }
+}
+
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .hfp-confetti__piece { animation: none; opacity: 0; }
+  .hfp-progress__fill, .hfp-loading-bar__fill { transition: none; }
+}

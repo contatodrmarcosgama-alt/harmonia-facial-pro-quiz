@@ -1,0 +1,22 @@
+FOTOS DE FUNDO — UMA POR TELA
+==============================
+
+Todas as telas já têm foto de fundo aplicada, usando as imagens que você
+enviou. Se quiser trocar alguma, basta substituir o arquivo .jpg correspondente
+com o mesmo nome — o app carrega automaticamente, sem precisar mexer em código:
+
+  intro.jpg, q1.jpg, q2.jpg, break1.jpg, q3.jpg, break2.jpg, q4.jpg,
+  break3.jpg, q5.jpg, q6.jpg, break4.jpg, product-intro.jpg, authority.jpg,
+  audio.jpg, proof.jpg, q7.jpg, results.jpg, loading.jpg, unlock.jpg, offer.jpg
+
+A foto do Dr. Marcos Gama (autoridade) é a foto real dele e fica em
+assets/images/dr-marcos-gama.jpeg — não precisa ser trocada.
+
+loading.jpg agora é a imagem exclusiva do rosto com a malha áurea dourada
+(a mesma do vídeo de referência) — não é mais compartilhada com nenhuma
+outra tela.
+
+unlock.jpg é usada na tela "Está tudo pronto!!" + formulário de nome/WhatsApp,
+que agora é UMA ÚNICA tela contínua (sem troca automática no meio). O arquivo
+lead-form.jpg deixou de ser usado por esse motivo e foi mantido na pasta só
+como referência — pode ser apagado sem problema.
