@@ -142,6 +142,7 @@
 
     if (step.id === 'intro') {
       HfpAnalytics.sendOnce('quiz_view', 'quiz_view', {});
+      HfpAnalytics.sendMetaOnce('quiz_view_meta', 'ViewContent', {}, 'track');
     }
     trackStepView(step.id);
 
@@ -295,6 +296,7 @@
 
       state.lead = { name, phone };
       HfpAnalytics.sendGaEvent('lead_form_submit', { form_id: 'lead_form', validation_status: 'success' });
+      HfpAnalytics.sendMetaEvent('Lead', { content_name: 'lead_form', validation_status: 'success' }, 'track');
       submitLead(state.lead);
       state.phase = 'offer';
       render();
@@ -316,6 +318,7 @@
     mount(HfpComponents.offerPage(HFP_OFFER), 'offer');
     trackStepView('offer');
     HfpAnalytics.sendGaEvent('offer_view', {});
+    HfpAnalytics.sendMetaEvent('OfferView', {}, 'trackCustom');
     wireOfferVideo();
     wireCountdown();
     wireCheckoutButtons();
@@ -366,12 +369,27 @@
       // Apenas mede o clique — nunca impede nem atrasa a navegação real do
       // link (o <a href> segue para a Kiwify normalmente).
       btn.addEventListener('click', () => {
+        const buttonId = btn.getAttribute('data-button-id') || 'checkout';
+        const buttonName = btn.getAttribute('data-button-name') || '';
         HfpAnalytics.sendGaEvent('checkout_click', {
-          button_id: btn.getAttribute('data-button-id') || 'checkout',
-          button_name: btn.getAttribute('data-button-name') || '',
+          button_id: buttonId,
+          button_name: buttonName,
           checkout_provider: 'kiwify',
           destination: 'https://pay.kiwify.com.br/dOngR7l'
         });
+        // Meta Pixel — InitiateCheckout, sem Purchase: a compra só é
+        // confirmada depois pela Kiwify após pagamento aprovado.
+        HfpAnalytics.sendMetaEvent('InitiateCheckout', {
+          content_name: 'Harmonia Facial PRO',
+          content_ids: ['harmonia-facial-pro'],
+          content_type: 'product',
+          value: 49.00,
+          currency: 'BRL',
+          button_id: buttonId,
+          button_name: buttonName,
+          checkout_provider: 'kiwify',
+          destination: 'https://pay.kiwify.com.br/dOngR7l'
+        }, 'track');
       });
     });
   }
@@ -386,6 +404,7 @@
         const step = HFP_STEPS[state.stepIndex];
         if (step && step.id === 'intro') {
           HfpAnalytics.sendGaEvent('quiz_start', {});
+          HfpAnalytics.sendMetaEvent('QuizStart', {}, 'trackCustom');
         } else if (step) {
           const meta = STEP_META[step.id];
           HfpAnalytics.sendGaEvent('quiz_continue', {
