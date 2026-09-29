@@ -45,9 +45,12 @@ const HfpAnalytics = (() => {
 
   // Parâmetros de campanha preservados (somente quando presentes na URL) e
   // encaminhados ao checkout. Nenhum valor é inventado aqui.
+  // fbclid foi acrescentado para o Pixel do Meta (clique vindo de anúncio),
+  // sem alterar o comportamento já existente para o GA4 — é só mais uma
+  // chave que passa a ser preservada quando presente.
   const UTM_KEYS = [
     'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
-    'src', 'sck', 's1', 's2', 's3'
+    'src', 'sck', 's1', 's2', 's3', 'fbclid'
   ];
 
   function captureUtms() {
@@ -126,6 +129,34 @@ const HfpAnalytics = (() => {
     sendGaEvent('quiz_step_view', payload);
   }
 
+  // Controla os eventos do Pixel do Meta que devem disparar no máximo uma
+  // vez por sessão de página (ex.: ViewContent). Independente do firedOnce
+  // do GA4 acima — cada canal tem seu próprio controle de duplicidade.
+  const firedOnceMeta = new Set();
+
+  // Envio centralizado e seguro de eventos para o Pixel do Meta via fbq.
+  // Nunca lança exceção e nunca bloqueia o quiz: se o fbq ainda não
+  // carregou, estiver bloqueado ou indisponível, o evento é apenas
+  // descartado silenciosamente — o mesmo princípio do sendGaEvent acima.
+  // "mode" é 'track' para eventos padrão do Meta (ViewContent, Lead,
+  // InitiateCheckout, ...) e 'trackCustom' para eventos que não fazem
+  // parte do catálogo padrão do Meta (ex.: QuizStart, OfferView).
+  function sendMetaEvent(name, payload, mode) {
+    const data = _sanitize(payload);
+    try {
+      if (typeof window.fbq === 'function') {
+        window.fbq(mode || 'trackCustom', name, data);
+      }
+    } catch (err) { /* nunca deixa o quiz quebrar por causa do pixel */ }
+  }
+
+  // Dispara um evento do Meta no máximo uma vez por sessão de página.
+  function sendMetaOnce(key, name, payload, mode) {
+    if (firedOnceMeta.has(key)) return;
+    firedOnceMeta.add(key);
+    sendMetaEvent(name, payload, mode);
+  }
+
   // Mantido por compatibilidade com integrações futuras (Meta/TikTok).
   // Não envia mais eventos ao GA4 diretamente (uso sendGaEvent para isso).
   function trackEvent(name, payload) {
@@ -141,6 +172,7 @@ const HfpAnalytics = (() => {
 
   return {
     init, captureUtms, buildCheckoutUrl,
-    trackEvent, sendGaEvent, sendOnce, sendStepView
+    trackEvent, sendGaEvent, sendOnce, sendStepView,
+    sendMetaEvent, sendMetaOnce
   };
 })();
